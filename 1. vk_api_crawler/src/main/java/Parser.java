@@ -23,7 +23,7 @@ public class Parser {
         post = EmojiUtils.removeAllEmojis(post);
         // Одновременно удаляю два эмодзи
         post = post.replaceAll("[✒\uD83C\uDFDB\uD83C\uDFFB\u200D♂\uD83D\uDCFD⛹\uD83C\uDFFC]+"," ");
-        post = post.replaceAll("[\\p{Punct}«»—–“”]+", " ");
+        post = post.replaceAll("[\\p{Punct}«»—–“”•☆]+", " ");
 //        post = post.replaceAll("[^\\w\\d\\s]+", " ");
         post = post.replaceAll("[\\s ]+", " ");
         return post.strip();
@@ -34,6 +34,7 @@ public class Parser {
 
        return text.replaceAll(URL_REGEX, "");
     }
+
 
     // избавить текст от эмодзи (массив исходного текста -> такой же массив без эмодзи)
     // избавить текст от ссылок (массив исходного текста -> такой же массив без эмодзи)
