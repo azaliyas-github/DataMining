@@ -22,7 +22,7 @@ public class DBManager {
     }
 
     public void addWord(Connection connection, String word, int count) {
-        String SQL_ADD_WORD = "insert into words_and_count values ( '" + word + "', " + count + ");";
+        String SQL_ADD_WORD = "insert into words values ( '" + word + "', " + count + ");";
         try {
             Statement st = connection.createStatement();
             st.executeUpdate(SQL_ADD_WORD);
@@ -32,7 +32,7 @@ public class DBManager {
     }
 
     public void removePreviouseResult(Connection connection) {
-        String SQL_DELETE_ALL_STRINGS = "DELETE FROM words_and_count";
+        String SQL_DELETE_ALL_STRINGS = "DELETE FROM words";
         try {
             Statement st = connection.createStatement();
             st.executeUpdate(SQL_DELETE_ALL_STRINGS);
