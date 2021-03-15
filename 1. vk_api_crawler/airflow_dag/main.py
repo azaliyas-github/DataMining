@@ -1,5 +1,3 @@
-import logging
-import sys
 from datetime import datetime
 
 from airflow.models import DAG
@@ -9,11 +7,6 @@ args = {
 	"owner": "airflow",
 	"retries": 1
 }
-
-log = logging.getLogger("airflow.task.operators")
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
-log.addHandler(handler)
 
 with DAG("titanic_pivot", args, None) as dag:
 	execute_jar = BashOperator(
