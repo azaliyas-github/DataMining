@@ -1,0 +1,3 @@
+CREATE TABLE words (
+	word TEXT NOT NULL PRIMARY KEY,
+	count INT NOT NULL);
