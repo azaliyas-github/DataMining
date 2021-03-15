@@ -130,6 +130,13 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Editor-based HTTP Client requests
+/httpRequests/
+
+# PyCharm
+**/.idea/dataSources.local.xml
+**/.idea/dataSources/
+
 # Java #
 
 # Compiled class file
@@ -157,5 +164,9 @@ dmypy.json
 hs_err_pid*
 
 # IntelliJ IDEA
-.idea/
-out/
+**/.idea/dataSources.xml
+**/.idea/workspace.xml
+**/.idea/usage.statistics.xml
+**/.idea/tasks.xml
+**/.idea/libraries/
+**/.idea/shelf/
