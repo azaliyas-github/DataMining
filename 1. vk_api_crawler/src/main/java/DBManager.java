@@ -8,7 +8,7 @@ public class DBManager {
         Connection connection = null;
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream("src/main/resources/config.properties"));
+            properties.load(getClass().getResourceAsStream("config.properties"));
         } catch (IOException e) {
             e.printStackTrace();
         }
