@@ -13,6 +13,7 @@ from implementation.infrastructure import configure_logging, format_exception
 from implementation.page_link import PageLink, PageLinkRepository
 
 log = logging.getLogger()
+pages_availability = {}
 
 max_depth = 3
 page_link_repository_name = "page-links"
@@ -62,6 +63,9 @@ def collect_web_pages(root_page_url):
 
         log.info("Сохраняю ссылки со страницы " + page_url)
         for to_url in child_urls:
+            if not check_availability(to_url):
+                continue
+
             page_link = PageLink(current_depth, page_url, to_url)
             try:
                 page_links.create(page_link)
@@ -86,10 +90,35 @@ def get_root_page_url():
     return input("URL: ")
 
 
-def download(url):
+def check_status_code(response):
+    return 200 <= response.status_code < 300
+
+
+def check_availability(url):
+    is_available = pages_availability.get(url)
+    if is_available is not None:
+        return is_available
+
+    # noinspection PyBroadException
     try:
         response = requests.get(url, headers={"accept": "text/html"}, allow_redirects=False, stream=True)
-        if response.status_code < 200 or response.status_code >= 300:
+        is_available = check_status_code(response)
+        response.close()
+    except Exception:
+        is_available = False
+
+    pages_availability[url] = is_available
+    return is_available
+
+
+def download(url):
+    is_available = pages_availability.get(url)
+    if is_available is not None and not is_available:
+        return None
+
+    try:
+        response = requests.get(url, headers={"accept": "text/html"}, allow_redirects=False, stream=True)
+        if not check_status_code(response):
             return None
 
         content_type = response.headers.get("content-type")
