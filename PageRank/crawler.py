@@ -89,6 +89,8 @@ def get_root_page_url():
 def download(url):
     try:
         response = requests.get(url, headers={"accept": "text/html"}, allow_redirects=False, stream=True)
+        if response.status_code < 200 or response.status_code >= 300:
+            return None
 
         content_type = response.headers.get("content-type")
         if content_type is None or len(content_type) == 0:
