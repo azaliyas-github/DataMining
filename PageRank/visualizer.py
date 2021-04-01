@@ -74,7 +74,8 @@ def draw_graph(page_links: List[PageLink], layout_name: str) -> None:
         for edge in graph_edges))
     cytospace_client.layout.apply(layout_name, graph)
 
-    image_height: int = max(len(graph_nodes) * 60, 600)
+    # 24000 пикселей — максимальная высота изображения; это ограничение накладывает Cytospace
+    image_height: int = min(max(len(graph_nodes) * 60, 600), 24000)
     graph_image: bytes = graph.get_png(image_height)
     with open(f"links-{layout_name}.png", "wb+") as png_file:
         png_file.write(graph_image)
