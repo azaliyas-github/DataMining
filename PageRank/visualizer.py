@@ -1,4 +1,5 @@
 import logging
+import sys
 from typing import Dict, List, Set, Tuple
 from urllib.parse import ParseResult, urlparse
 
@@ -11,15 +12,22 @@ from implementation.page_link import PageLink, PageLinkRepository
 
 log: logging.Logger = logging.getLogger()
 
-layout_name = "circular"
-
 
 def main() -> None:
+    layout_name: str = get_layout_name()
+
     configure_logging()
 
     page_links: List[PageLink] = get_page_links(page_link_repository_name)
 
-    draw_graph(page_links)
+    draw_graph(page_links, layout_name)
+
+
+def get_layout_name() -> str:
+    if len(sys.argv) == 2:
+        return sys.argv[1]
+
+    return input("Layout: ")
 
 
 def get_page_links(repository_name: str) -> List[PageLink]:
@@ -44,7 +52,7 @@ def preprocess_url(url: str) -> str:
     return url
 
 
-def draw_graph(page_links: List[PageLink]) -> None:
+def draw_graph(page_links: List[PageLink], layout_name: str) -> None:
     log.info(f"Создаю граф из {len(page_links)} ссылок")
     graph_nodes: Set[str] = set()
     graph_edges: List[Tuple[str, str]] = []
