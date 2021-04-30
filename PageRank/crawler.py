@@ -7,12 +7,14 @@ from itertools import chain
 from urllib.parse import urldefrag, urljoin
 
 import requests
+import validators
 from bs4 import BeautifulSoup
 
 from implementation.infrastructure import configure_logging, format_exception
 from implementation.page_link import PageLink, PageLinkRepository
 
 log = logging.getLogger()
+pages_availability = {}
 
 max_depth = 3
 page_link_repository_name = "page-links"
@@ -58,11 +60,19 @@ def collect_web_pages(root_page_url):
             continue
 
         page_content = get_content(parsed_html_page)
-        child_urls = set(get_link_urls(page_url, parsed_html_page, page_content))
+        child_urls = list(get_link_urls(page_url, parsed_html_page, page_content))
 
         log.info("Сохраняю ссылки со страницы " + page_url)
+        link_counts = {}
         for to_url in child_urls:
-            page_link = PageLink(current_depth, page_url, to_url)
+            if not check_availability(to_url):
+                continue
+
+            link_counts.setdefault(to_url, 1)
+            link_counts[to_url] += 1
+
+        for to_url, count in link_counts.items():
+            page_link = PageLink(current_depth, page_url, to_url, count)
             try:
                 page_links.create(page_link)
             except Exception as exception:
@@ -72,7 +82,9 @@ def collect_web_pages(root_page_url):
 
         if current_depth < max_depth:
             # возвращается разница дочерних и просмотренных ссылок
-            child_urls = child_urls.difference(seen_page_urls)
+            child_urls = list(filter(
+                lambda url: url not in seen_page_urls,
+                link_counts.keys()))
             child_urls = [(url, current_depth + 1) for url in child_urls]  # кортеж
 
             page_urls_to_download.extend(child_urls)
@@ -86,9 +98,36 @@ def get_root_page_url():
     return input("URL: ")
 
 
-def download(url):
+def check_status_code(response):
+    return 200 <= response.status_code < 300
+
+
+def check_availability(url):
+    is_available = pages_availability.get(url)
+    if is_available is not None:
+        return is_available
+
+    # noinspection PyBroadException
     try:
         response = requests.get(url, headers={"accept": "text/html"}, allow_redirects=False, stream=True)
+        is_available = check_status_code(response)
+        response.close()
+    except Exception:
+        is_available = False
+
+    pages_availability[url] = is_available
+    return is_available
+
+
+def download(url):
+    is_available = pages_availability.get(url)
+    if is_available is not None and not is_available:
+        return None
+
+    try:
+        response = requests.get(url, headers={"accept": "text/html"}, allow_redirects=False, stream=True)
+        if not check_status_code(response):
+            return None
 
         content_type = response.headers.get("content-type")
         if content_type is None or len(content_type) == 0:
@@ -122,6 +161,9 @@ def get_link_urls(current_url, html, content):
 
     # Убираем якори из URL
     urls = (urldefrag(url).url for url in urls)
+
+    # Отсеиваем некорректные URL
+    urls = (url for url in urls if validators.url(url))
 
     return urls
 

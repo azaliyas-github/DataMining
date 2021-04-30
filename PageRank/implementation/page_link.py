@@ -4,10 +4,11 @@ from implementation.infrastructure import get_tinydb_table
 
 
 class PageLink:
-	def __init__(self, depth, from_url, to_url):
+	def __init__(self, depth, from_url, to_url, count):
 		self.depth = depth
 		self.from_url = from_url
 		self.to_url = to_url
+		self.count = count
 
 
 class PageLinkRepository:
