@@ -7,6 +7,7 @@ from itertools import chain
 from urllib.parse import urldefrag, urljoin
 
 import requests
+import validators
 from bs4 import BeautifulSoup
 
 from implementation.infrastructure import configure_logging, format_exception
@@ -160,6 +161,9 @@ def get_link_urls(current_url, html, content):
 
     # Убираем якори из URL
     urls = (urldefrag(url).url for url in urls)
+
+    # Отсеиваем некорректные URL
+    urls = (url for url in urls if validators.url(url))
 
     return urls
 
