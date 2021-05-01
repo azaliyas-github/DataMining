@@ -1,5 +1,6 @@
 import logging
 import sys
+from argparse import Namespace
 from itertools import chain
 from typing import Dict, List, Set, Tuple
 from urllib.parse import ParseResult, urlparse
@@ -9,6 +10,7 @@ from py2cytoscape.data.cynetwork import CyNetwork
 from py2cytoscape.data.cyrest_client import CyRestClient
 
 from implementation.common import page_link_repository_name
+from implementation.configuration import SafeArgumentParser
 from implementation.infrastructure import configure_logging
 from implementation.page_link import PageLink, PageLinkRepository
 
@@ -16,21 +18,29 @@ log: logging.Logger = logging.getLogger()
 
 
 def main() -> None:
-    layout_name: str = get_layout_name()
+    configuration: Namespace = get_configuration()
 
     configure_logging()
 
     page_links: List[PageLink] = get_page_links(page_link_repository_name)
 
-    output_transition_matrix(page_links)
-    draw_graph(page_links, layout_name)
+    if configuration.output_matrix:
+        output_transition_matrix(page_links)
+    if configuration.draw_graph:
+        draw_graph(page_links, configuration.layout_name)
 
 
-def get_layout_name() -> str:
-    if len(sys.argv) == 2:
-        return sys.argv[1]
+def get_configuration(unparsed_args: List[str] = None) -> Namespace:
+    argument_parser: SafeArgumentParser = SafeArgumentParser()
+    argument_parser.add_argument("layout_name", metavar = "layout-name")
+    argument_parser.add_argument("--no-output-matrix", dest = "output_matrix", action = "store_false")
+    argument_parser.add_argument("--no-draw-graph", dest = "draw_graph", action = "store_false")
+    args: Namespace = argument_parser.parse_args(unparsed_args)
 
-    return input("Layout: ")
+    if args.layout_name is None:
+        args.layout_name = input("Layout: ")
+
+    return args
 
 
 def get_page_links(repository_name: str) -> List[PageLink]:

@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import traceback
 
 from tinydb import TinyDB
@@ -16,6 +17,10 @@ def configure_logging():
 	console_handler.setFormatter(log_formatter)
 	console_handler.setLevel(logging.INFO)
 	root_logger.addHandler(console_handler)
+
+
+def get_current_exception() -> BaseException:
+	return sys.exc_info()[1]
 
 
 def format_exception(exception):
