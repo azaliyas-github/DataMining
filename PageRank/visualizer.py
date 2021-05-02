@@ -1,5 +1,4 @@
 import logging
-import sys
 from argparse import Namespace
 from itertools import chain
 from typing import Dict, List, Set, Tuple
@@ -11,16 +10,14 @@ from py2cytoscape.data.cyrest_client import CyRestClient
 
 from implementation.common import page_link_repository_name
 from implementation.configuration import SafeArgumentParser
-from implementation.infrastructure import configure_logging
+from implementation.infrastructure import get_logger
 from implementation.page_link import PageLink, PageLinkRepository
 
-log: logging.Logger = logging.getLogger()
+log: logging.Logger = get_logger()
 
 
 def main() -> None:
     configuration: Namespace = get_configuration()
-
-    configure_logging()
 
     page_links: List[PageLink] = get_page_links(page_link_repository_name)
 

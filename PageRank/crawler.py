@@ -11,10 +11,10 @@ import validators
 from bs4 import BeautifulSoup
 
 from implementation.common import page_link_repository_name
-from implementation.infrastructure import configure_logging, format_exception
+from implementation.infrastructure import get_logger, format_exception
 from implementation.page_link import PageLink, PageLinkRepository
 
-log = logging.getLogger()
+log: logging.Logger = get_logger()
 pages_availability = {}
 
 max_depth = 3
@@ -24,8 +24,6 @@ def main():
     root_page_url = get_root_page_url()
     if root_page_url is None:
         return
-
-    configure_logging()
 
     collect_web_pages(root_page_url)
 
