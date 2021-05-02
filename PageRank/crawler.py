@@ -10,6 +10,7 @@ import requests
 import validators
 from bs4 import BeautifulSoup
 
+from implementation.common import page_link_repository_name
 from implementation.infrastructure import configure_logging, format_exception
 from implementation.page_link import PageLink, PageLinkRepository
 
@@ -17,7 +18,6 @@ log = logging.getLogger()
 pages_availability = {}
 
 max_depth = 3
-page_link_repository_name = "page-links"
 
 
 def main():
