@@ -22,7 +22,8 @@ def main() -> None:
     page_links: List[PageLink] = get_page_links(page_link_repository_name)
 
     if configuration.output_matrix:
-        output_transition_matrix(page_links)
+        index, matrix = build_transition_matrix(page_links)
+        save_transition_matrix(index, matrix)
     if configuration.draw_graph:
         draw_graph(page_links, configuration.layout_name)
 
@@ -91,7 +92,8 @@ def draw_graph(page_links: List[PageLink], layout_name: str) -> None:
         png_file.write(graph_image)
 
 
-def output_transition_matrix(page_links: List[PageLink]):
+def build_transition_matrix(page_links: List[PageLink]) -> Tuple[Dict[str, int], DataFrame]:
+    log.info("Строю индекс")
     page_urls: List[str] = list(
         chain(
             (link.from_url for link in page_links),
@@ -100,16 +102,10 @@ def output_transition_matrix(page_links: List[PageLink]):
     for url in page_urls:
         if url not in index:
             index[url] = len(index)
-
-    log.info("Строю индекс")
-    index_csv: DataFrame = DataFrame(data = {"url": index.keys()}, index = index.values())
-
-    log.info("Сохраняю индекс")
-    index_csv.to_csv("index.csv", index_label = "id")
-    del index_csv
+    del page_urls
 
     log.info("Строю матрицу переходов")
-    empty_column: List[float] = [0.0] * len(page_urls)
+    empty_column: List[float] = [0.0] * len(index)
     matrix: DataFrame = DataFrame(
         data = dict((id_, empty_column) for id_ in index.values()),
         dtype = float)
@@ -122,9 +118,17 @@ def output_transition_matrix(page_links: List[PageLink]):
         if column_sum > 0:
             matrix[column] = matrix[column] / column_sum
 
+    return index, matrix
+
+
+def save_transition_matrix(index: Dict[str, int], matrix: DataFrame) -> None:
+    log.info("Сохраняю индекс")
+    index_csv: DataFrame = DataFrame(data = {"url": index.keys()}, index = index.values())
+    index_csv.to_csv("index.csv", index_label = "id")
+    del index_csv
+
     log.info("Сохраняю матрицу переходов")
     matrix.to_csv("matrix.csv")
-    del matrix
 
 
 if __name__ == '__main__':
