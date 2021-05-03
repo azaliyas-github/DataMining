@@ -1,10 +1,12 @@
 import logging
+from argparse import Namespace
 from itertools import chain
 from typing import Dict, List, Tuple
 
 from pandas import DataFrame
 
 from implementation.common import page_link_repository_name
+from implementation.configuration import SafeArgumentParser
 from implementation.infrastructure import get_logger
 from implementation.page_link import PageLink, PageLinkRepository
 
@@ -12,11 +14,33 @@ log: logging.Logger = get_logger()
 
 
 def main() -> None:
+	configuration: Namespace = get_configuration()
+
 	page_links: List[PageLink] = get_page_links(page_link_repository_name)
 
-	page_ranks: Dict[str, float] = calculate_page_ranks(page_links)
+	page_ranks: Dict[str, float] = calculate_page_ranks(
+		page_links,
+		configuration.dumping_factor,
+		configuration.iterations_count)
 
 	save_page_ranks(page_ranks)
+
+
+def get_configuration(unparsed_args: List[str] = None) -> Namespace:
+	argument_parser: SafeArgumentParser = SafeArgumentParser()
+	argument_parser.add_argument(
+		"-df",
+		type = float,
+		help = "dumping factor",
+		default = 0.9,
+		dest = "dumping_factor")
+	argument_parser.add_argument(
+		"-ic",
+		type = int,
+		help = "iterations count",
+		default = 20,
+		dest = "iterations_count")
+	return argument_parser.parse_args(unparsed_args)
 
 
 def get_page_links(repository_name: str) -> List[PageLink]:
@@ -25,11 +49,16 @@ def get_page_links(repository_name: str) -> List[PageLink]:
 	return page_links_repository.get_all()
 
 
-def calculate_page_ranks(page_links: List[PageLink]) -> Dict[str, float]:
+def calculate_page_ranks(
+		page_links: List[PageLink],
+		damping_factor: float,
+		iterations_count: int) -> Dict[str, float]:
 	index, transition_matrix = build_transition_matrix(page_links)
 	pages_count: int = len(index)
 
-	log.info(f"Рассчитываю PageRank страниц в графе из {len(page_links)} ссылок")
+	log.info(
+		f"Рассчитываю PageRank страниц в графе из {len(page_links)} ссылок "
+		+ f"с damping factor {damping_factor} для {iterations_count} итераций")
 	raise NotImplementedError()
 
 
