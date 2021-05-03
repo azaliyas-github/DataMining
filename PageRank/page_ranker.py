@@ -3,6 +3,8 @@ from argparse import Namespace
 from itertools import chain
 from typing import Dict, List, Tuple
 
+import numpy
+from numpy import ndarray
 from pandas import DataFrame
 
 from implementation.common import page_link_repository_name
@@ -59,7 +61,14 @@ def calculate_page_ranks(
 	log.info(
 		f"Рассчитываю PageRank страниц в графе из {len(page_links)} ссылок "
 		+ f"с damping factor {damping_factor} для {iterations_count} итераций")
-	raise NotImplementedError()
+	page_ranks: ndarray = numpy.full(pages_count, 1 / pages_count, dtype = float)
+	damped_matrix: ndarray = transition_matrix.to_numpy()
+	damped_matrix *= damping_factor
+	damping_vector: ndarray = numpy.full(pages_count, (1 - damping_factor) / pages_count, dtype = float)
+	for _ in range(iterations_count):
+		page_ranks = numpy.dot(damped_matrix, page_ranks) + damping_vector
+
+	return dict((url, page_ranks[url_index]) for url, url_index in index.items())
 
 
 def build_transition_matrix(page_links: List[PageLink]) -> Tuple[Dict[str, int], DataFrame]:
