@@ -102,7 +102,8 @@ def build_transition_matrix(page_links: List[PageLink]) -> Tuple[Dict[str, int],
 
 def save_page_ranks(page_ranks: Dict[str, float]):
 	log.info(f"Сохраняю рассчитанный PageRank")
-	raise NotImplementedError()
+	page_ranks_csv: DataFrame = DataFrame(data = {"page_rank": page_ranks.values()}, index = page_ranks.keys())
+	page_ranks_csv.to_csv("page-ranks.csv", index_label = "url")
 
 
 if __name__ == '__main__':
