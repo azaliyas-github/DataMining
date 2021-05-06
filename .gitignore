@@ -168,11 +168,14 @@ hs_err_pid*
 # Generated files
 **/.idea/**/*.iml
 **/.idea/**/contentModel.xml
+**/.idea/**/libraries/
+**/.idea/**/shelf/
 
 # Sensitive or high-churn files
 **/.idea/**/dataSources/
 **/.idea/**/dataSources.ids
 **/.idea/**/dataSources.local.xml
+**/.idea/**/dataSources.xml
 **/.idea/**/sqlDataSources.xml
 **/.idea/**/dynamic.xml
 **/.idea/**/uiDesigner.xml
