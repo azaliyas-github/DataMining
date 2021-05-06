@@ -93,12 +93,10 @@ def draw_graph(page_links: List[PageLink], layout_name: str) -> None:
 
 
 def save_transition_matrix(index: Dict[str, int], matrix: DataFrame) -> None:
-    log.info("Сохраняю индекс")
-    index_csv: DataFrame = DataFrame(data = {"url": index.keys()}, index = index.values())
-    index_csv.to_csv("index.csv", index_label = "id")
-    del index_csv
-
     log.info("Сохраняю матрицу переходов")
+    reverted_index: Dict[int, str] = dict((url_index, url) for url, url_index in index.items())
+    matrix.columns = list(reverted_index[url_index] for url_index in matrix.columns)
+    matrix.index = list(reverted_index[url_index] for url_index in matrix.index)
     matrix.to_csv("matrix.csv")
 
 
