@@ -15,13 +15,16 @@ from page_ranker import build_transition_matrix
 
 log: logging.Logger = get_logger()
 
+max_url_length: int = 60
+
 
 def main() -> None:
     configuration: Namespace = get_configuration()
 
     page_links: List[PageLink] = get_page_links(page_link_repository_name)
+    page_links = merge_duplicate_page_links(page_links)
 
-    if configuration.output_matrix:
+    if configuration.save_matrix:
         index, matrix = build_transition_matrix(page_links)
         save_transition_matrix(index, matrix)
     if configuration.draw_graph:
@@ -31,7 +34,7 @@ def main() -> None:
 def get_configuration(unparsed_args: List[str] = None) -> Namespace:
     argument_parser: SafeArgumentParser = SafeArgumentParser()
     argument_parser.add_argument("layout_name", metavar = "layout-name")
-    argument_parser.add_argument("--no-output-matrix", dest = "output_matrix", action = "store_false")
+    argument_parser.add_argument("--no-save-matrix", dest = "save_matrix", action = "store_false")
     argument_parser.add_argument("--no-draw-graph", dest = "draw_graph", action = "store_false")
     args: Namespace = argument_parser.parse_args(unparsed_args)
 
@@ -60,7 +63,21 @@ def preprocess_url(url: str) -> str:
     scheme: str = parsed_url.scheme + "://"
     url = parsed_url.geturl().replace(scheme, "", 1)
 
+    url = url[:max_url_length]
+
     return url
+
+
+def merge_duplicate_page_links(page_links: List[PageLink]) -> List[PageLink]:
+    merged_page_links: Dict[Tuple[str, str], int] = dict()
+
+    for link in page_links:
+        link_key: Tuple[str, str] = (link.from_url, link.to_url)
+        merged_page_links[link_key] = merged_page_links.setdefault(link_key, 0) + link.count
+
+    return [
+        PageLink(0, from_url, to_url, count)
+        for (from_url, to_url), count in merged_page_links.items()]
 
 
 def draw_graph(page_links: List[PageLink], layout_name: str) -> None:
